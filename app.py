@@ -37,18 +37,32 @@ def stems():
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
         
-        # Save temp file
-        temp_path = f'/tmp/{file.filename}'
-        file.save(temp_path)
+        import base64
+        import tempfile
         
-        # Process
-        result = split_audio(temp_path)
-        
-        # Clean up
-        os.remove(temp_path)
-        
-        return jsonify(result)
+        # Save temp file in a safe location
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = os.path.join(temp_dir, file.filename)
+            output_dir = os.path.join(temp_dir, 'stems')
+            
+            file.save(input_path)
+            
+            # Process
+            split_audio(input_path, output_dir)
+            
+            # Read and encode stems as base64
+            stems_data = {}
+            for stem_name in ['vocals', 'drums', 'bass', 'other']:
+                stem_file = os.path.join(output_dir, f'{stem_name}.wav')
+                if os.path.exists(stem_file):
+                    with open(stem_file, 'rb') as f:
+                        stems_data[stem_name] = base64.b64encode(f.read()).decode('utf-8')
+            
+            return jsonify(stems_data)
     except Exception as e:
+        import traceback
+        print(f"ERROR in /api/stems: {str(e)}")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/tempo', methods=['POST'])
@@ -61,19 +75,22 @@ def tempo():
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
         
-        # Save temp file
-        temp_path = f'/tmp/{file.filename}'
-        file.save(temp_path)
+        import tempfile
         
-        # Process
-        result = analyze_tempo(temp_path)
-        
-        # Clean up
-        os.remove(temp_path)
-        
-        return jsonify(result)
+        # Save temp file in a safe location
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audio_path = os.path.join(temp_dir, file.filename)
+            file.save(audio_path)
+            
+            # Process
+            result = analyze_tempo(audio_path)
+            
+            return jsonify(result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        print(f"ERROR in /api/tempo: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'success': False}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
