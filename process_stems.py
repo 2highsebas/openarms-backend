@@ -34,9 +34,9 @@ def split_audio(input_path, output_path):
             print("librosa not installed. Install with: pip install librosa")
             raise
         
-        print("Loading Demucs model...")
-        # Use lighter model for production (mdx_extra uses less memory)
-        model = get_model('mdx_extra')
+        print("Loading Demucs model (htdemucs, lightweight)...")
+        # Use much lighter model for Railway free tier
+        model = get_model('htdemucs')  # 'mdx' is even lighter, but only 1 stem
         model.cpu()
         model.eval()
         
