@@ -2,11 +2,17 @@
 # Simple Python Flask server to run the audio processing APIs
 # Place this file in your backend directory and run: python app.py
 
-from flask import Flask, request, jsonify
 import os
 import sys
 import json
+
+# Force CPU-only execution for PyTorch/Demucs
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
+os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
+
 sys.path.insert(0, os.path.dirname(__file__))
+
+from flask import Flask, request, jsonify
 
 from process_stems import split_audio
 from analyze_tempo import analyze_tempo
