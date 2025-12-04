@@ -13,11 +13,15 @@ os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 sys.path.insert(0, os.path.dirname(__file__))
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 from process_stems import split_audio
 from analyze_tempo import analyze_tempo
 
 app = Flask(__name__)
+
+# Enable CORS for all routes
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route('/')
 def health():
