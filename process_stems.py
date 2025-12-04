@@ -3,6 +3,7 @@ import os
 import torch
 import soundfile as sf
 import math
+import gc
 
 def split_audio(input_path, output_path):
     """AI-powered audio stem separation using Demucs.
@@ -34,7 +35,8 @@ def split_audio(input_path, output_path):
             raise
         
         print("Loading Demucs model...")
-        model = get_model('htdemucs')
+        # Use lighter model for production (mdx_extra uses less memory)
+        model = get_model('mdx_extra')
         model.cpu()
         model.eval()
         
@@ -154,10 +156,12 @@ def split_audio(input_path, output_path):
                     print(f"Failed to copy {stem}: {copy_error}")
             fallback_used = True
 
-    print("Separation pipeline finished.")
-    return separation_done and not fallback_used
-
-if __name__ == "__main__":
+        print("Separation pipeline finished.")
+    
+    # Force garbage collection to free memory
+    gc.collect()
+    
+    return separation_done and not fallback_usedif __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python process_stems.py <input_path> <output_path>")
         sys.exit(1)
