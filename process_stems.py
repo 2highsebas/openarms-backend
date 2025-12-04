@@ -161,7 +161,9 @@ def split_audio(input_path, output_path):
     # Force garbage collection to free memory
     gc.collect()
     
-    return separation_done and not fallback_usedif __name__ == "__main__":
+    return separation_done and not fallback_used
+
+if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python process_stems.py <input_path> <output_path>")
         sys.exit(1)
